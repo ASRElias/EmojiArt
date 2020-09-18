@@ -1,5 +1,5 @@
 //
-//  EmojiArtExtensions.swift
+//  EmojiArt+Extensions.swift
 //  EmojiArt
 //
 //  Created by CS193p Instructor on 4/27/20.

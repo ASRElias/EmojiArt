@@ -8,20 +8,31 @@
 
 import Foundation
 
-struct EmojiArt {
+struct EmojiArt: Codable {
     
     private var uniqueEmojiId: Int = 0
     
     var backgroundURL: URL?
     var emojis = [Emoji]()
+    var json: Data?  {
+        return try? JSONEncoder().encode(self)
+    }
     
-    struct Emoji: Identifiable {
+    init?(json: Data?) {
+        if json != nil, let newEmojiArt = try? JSONDecoder().decode(EmojiArt.self, from: json!) {
+            self = newEmojiArt
+        } else {
+            return nil
+        }
+    }
+    
+    init() { }
+    
+    struct Emoji: Identifiable, Codable, Hashable {
     
         let id: Int
         let text: String
-        /// Offset from center
         var x: Int
-        /// Offset from center
         var y: Int
         var size: Int
         
