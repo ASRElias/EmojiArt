@@ -9,7 +9,9 @@
 import SwiftUI
 import Combine
 
-class EmojiArtDocument: ObservableObject {
+class EmojiArtDocument: ObservableObject, Hashable, Identifiable {
+
+    let id: UUID
     
     static let pallete: String = "🐆🐉🌹⛈⛄️"
 
@@ -31,19 +33,28 @@ class EmojiArtDocument: ObservableObject {
     
     private var fetchImageCancellable: AnyCancellable?
     
+    @Published var steadyStateZoomScale: CGFloat = 1.0
+    
+    @Published var steadyStatePanOffset: CGSize = .zero
+    
     @Published private var emojiArt: EmojiArt
 
     @Published private(set) var backgroundImage: UIImage?
     
-    init() {
-        emojiArt = EmojiArt(json: UserDefaults.standard.data(forKey: EmojiArtDocument.untitled)) ?? EmojiArt()
+    init(id: UUID? = nil) {
+        self.id = id ?? UUID()
+        let defaultsKey = "EmojiArtDocument.\(self.id.uuidString)"
+        emojiArt = EmojiArt(json: UserDefaults.standard.data(forKey: defaultsKey)) ?? EmojiArt()
         autosabeCancellable = $emojiArt.sink { emojiArt in
-            UserDefaults.standard.set(emojiArt.json, forKey: EmojiArtDocument.untitled)
+            UserDefaults.standard.set(emojiArt.json, forKey: defaultsKey)
         }
         fetchBackgroundImageData()
     }
     
     // MARK: - Intents
+    static func == (lhs: EmojiArtDocument, rhs: EmojiArtDocument) -> Bool {
+        lhs.id == rhs.id
+    }
     
     func addEmoji(_ emoji: String, at location: CGPoint, size: CGFloat) {
         emojiArt.addEmoji(emoji, x: Int(location.x), y: Int(location.y), size: Int(size))
@@ -72,6 +83,10 @@ class EmojiArtDocument: ObservableObject {
                 .replaceError(with: nil)
                 .assign(to: \.backgroundImage, on: self)
         }
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }
 
